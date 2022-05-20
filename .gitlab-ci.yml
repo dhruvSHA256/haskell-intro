@@ -33,7 +33,7 @@ check:
     # we need to fetch main branch, as by default gitlab CI only clones single branch
     - git fetch origin main:main
     - |
-      git clone --depth 1 https://gitlab-ci-token:${CI_JOB_TOKEN}@code.well-typed.com/assignments/haskell-intro-tests.git
+      git clone --depth 1 https://gitlab-ci-token:${CI_JOB_TOKEN}@code.well-typed.com/assignments/haskell-intro-tests.git tests
     - cabal build
     - cabal exec runghc -- check-assignments.hs --check-only
   cache:
@@ -57,7 +57,7 @@ tests:
     # we need to fetch main branch, as by default gitlab CI only clones single branch
     - git fetch origin main:main
     - |
-      git clone --depth 1 https://gitlab-ci-token:${CI_JOB_TOKEN}@code.well-typed.com/assignments/haskell-intro-tests.git
+      git clone --depth 1 https://gitlab-ci-token:${CI_JOB_TOKEN}@code.well-typed.com/assignments/haskell-intro-tests.git tests
     - cabal build
     - cabal exec runghc check-assignments.hs
   cache:
