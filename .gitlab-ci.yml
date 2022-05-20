@@ -1,0 +1,70 @@
+image: kosmikus/debian-ghc:10-8.10.4
+
+stages:
+  - prepare
+  - check
+  - test
+
+deps:
+  stage: prepare
+  only:
+    - merge_requests
+  before_script:
+    - export CABAL_DIR="$PWD/.localcabal"
+    - ghc --version
+    - cabal --version
+    - cabal v2-update
+  script:
+    - cabal build --dependencies-only --enable-tests all
+  cache:
+    key: "test"
+    paths:
+      - .localcabal/
+
+check:
+  stage: check
+  only:
+    - merge_requests
+  before_script:
+    - export CABAL_DIR="$PWD/.localcabal"
+    - ghc --version
+    - cabal --version
+  script:
+    # we need to fetch main branch, as by default gitlab CI only clones single branch
+    - git fetch origin main:main
+    - |
+      git clone --depth 1 https://gitlab-ci-token:${TEST_REPO_ACCESS_TOKEN}@gitlab.well-typed.com/tomasz/haskell-intro-tests.git tests
+    - cabal build
+    - cabal exec runghc -- check-assignments.hs --check-only
+  cache:
+    key: "test"
+    paths:
+      - .localcabal/
+  artifacts:
+    when: always
+    reports:
+      junit: spec-out/**/*.xml
+
+tests:
+  stage: test
+  only:
+    - merge_requests
+  before_script:
+    - export CABAL_DIR="$PWD/.localcabal"
+    - ghc --version
+    - cabal --version
+  script:
+    # we need to fetch main branch, as by default gitlab CI only clones single branch
+    - git fetch origin main:main
+    - |
+      git clone --depth 1 https://gitlab-ci-token:${TEST_REPO_ACCESS_TOKEN}@gitlab.well-typed.com/tomasz/haskell-intro-tests.git tests
+    - cabal build
+    - cabal exec runghc check-assignments.hs
+  cache:
+    key: "test"
+    paths:
+      - .localcabal/
+  artifacts:
+    when: always
+    reports:
+      junit: spec-out/**/*.xml

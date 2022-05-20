@@ -1,0 +1,11 @@
+cradle:
+  multi:
+    - path: "."
+      config:
+        cradle:
+          cabal:
+    - path: "demo/"
+      config:
+        cradle:
+          direct:
+            arguments: []
