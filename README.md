@@ -91,7 +91,8 @@ The exam will be two hours.
 ## Videos
 
 The slides and assignments will be distributed via this repository. The videos
-themselves are all visible via [this link](https://courses.pages.well-typed.com/haskell-intro/).
+themselves are all visible via 
+[this link](https://teaching.well-typed.com/courses/intro/).
 You need to be logged into the Well-Typed Gitlab to access it.
 
 The site contains an overview of the course structure, and all the individual numbered
@@ -132,9 +133,8 @@ Please look [here][Setup] for detailed instructions.
 
 Submit assignments by creating a branch in the repository and creating a merge
 request. Each time you create a new branch for your solution start from the
-*main* branch. Please name your branch with your `your.name-assignment`, e.g.
-`your.name-a` for assignment A, `your.name-b` for assignment B, etc. This
-ensures that we don't have branch name conflicts.
+*main* branch. Please name your branch with your `assignment`, e.g.
+`assignment-a` for assignment A, `assignment-b` for assignment B, etc.
 
 Before making merge request please make sure that your branch contains all most
 recent changes from the main branch, either by rebasing (if you did not yet
@@ -167,4 +167,4 @@ Finally, if the third stage *test* fails then likely part of
 your solution is wrong. Again, you can check the *Tests* tab 
 of detailed view of the pipeline to see which tests failed and why.
 
-[Setup]: https://courses.pages.well-typed.com/haskell-intro/setup.html
+[Setup]: https://teaching.well-typed.com/courses/intro/setup.html
