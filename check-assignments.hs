@@ -120,5 +120,5 @@ main = do
   opts <- Opts.execParser $ Opts.info (cliOpts <**> Opts.helper) Opts.fullDesc
   let test = if checkOnly opts then const (pure ()) else runTest
   createDirectoryIfMissing True "spec-out"
-  checkRebasedOnMaster
+  -- checkRebasedOnMaster
   submitted >>= checkOne test
