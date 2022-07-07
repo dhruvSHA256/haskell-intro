@@ -29,6 +29,16 @@ import Text.Read (readMaybe)
 --
 -- Use a suitable higher-order function to solve this.
 --
+-- Examples:
+--
+-- >>> validateMonths []
+-- Just []
+-- >>> validateMonths [1,4,7,10]
+-- Just [MkMonth 1,MkMonth 4,MkMonth 7,MkMonth 10]
+-- >>> validateMonths [1,4,7,13]
+-- Nothing
+-- >>> validateMonths [1,-2,7,10]
+-- Nothing
 
 newtype Month = MkMonth Int
   deriving Show
