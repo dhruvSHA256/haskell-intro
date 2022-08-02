@@ -156,6 +156,9 @@ sumMany = error "TODO: define sumMany"
 -- Hint: You cannot use 'replicateM' for this. But perhaps
 -- you can still find higher-order functions that work?
 
+sumMany' :: IO ()
+sumMany' = error "TODO: define sumMany"
+
 -- Task E-9.
 --
 -- Define a function 'compareFileSizes' that takes two file paths.
