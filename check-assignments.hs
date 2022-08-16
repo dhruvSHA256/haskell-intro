@@ -55,7 +55,7 @@ parseDiff = maybeResult . parse (many space *> pAssignment)
 submitted :: (Bounded a, Enum a, IsAssignment a) => IO [a]
 submitted = do
   diffs <- shelly . silently $
-    run "git" ["--no-pager", "diff", "--stat", "main", "assignments/"]
+    run "git" ["--no-pager", "diff", "--stat", "main...", "assignments/"]
   pure . mapMaybe parseDiff . T.lines $ diffs
 
 runGHC :: Text -> IO ()
