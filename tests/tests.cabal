@@ -29,4 +29,5 @@ executable check-assignments
     junit-xml >= 0.1,
     hspec, QuickCheck, hspec-junit-formatter == 1.0.1.0, hspec-core, random, conduit,
     statistics,
-    tests-common
+    tests-common,
+    a, b, c, d, e, f
