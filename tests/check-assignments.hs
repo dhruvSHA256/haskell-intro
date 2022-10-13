@@ -39,7 +39,7 @@ instance IsAssignment Assignment where
 
   testEntries AssignmentA = ["tests/complete/ATest.hs"]
   testEntries AssignmentB = ["tests/complete/BTest.hs"]
-  testEntries AssignmentC = ["tests/complete/CTest.hs"]
+  testEntries AssignmentC = ["tests/examples/CTest.hs", "tests/complete/CTest.hs"]
   testEntries AssignmentD = ["tests/complete/DTest.hs"]
   testEntries AssignmentE = ["tests/complete/ETest.hs"]
   testEntries AssignmentF = ["tests/complete/FTest.hs"]
