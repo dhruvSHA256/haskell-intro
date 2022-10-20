@@ -2,7 +2,6 @@
 {-# LANGUAGE TypeApplications #-}
 module Main where
 
-import Shelly
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
 
@@ -15,10 +14,13 @@ import Data.Maybe (mapMaybe)
 import Data.Function ((&))
 import System.Directory (createDirectoryIfMissing)
 import Data.List (intercalate)
-import System.Directory.Internal.Prelude (exitFailure)
+import System.Directory.Internal.Prelude (exitFailure, unless)
 import qualified Options.Applicative as Opts
 
+import SimpleCmd
+
 import TestsCommon
+import Control.Monad (when)
 
 data Assignment =
     AssignmentA
@@ -53,6 +55,10 @@ cliOpts = CLIOpts
   <*> Opts.switch ( Opts.long "allow-many" <> Opts.help "Allow submission of more than one assignment" )
   <*> Opts.switch ( Opts.long "check-rebased" <> Opts.help "Check if branch is rebased on top of main branch" )
 
+checkError :: Bool -> IO ()
+checkError True = pure ()
+checkError False = exitFailure 
+
 main :: IO ()
 main = do
   opts <- Opts.execParser $ Opts.info (cliOpts <**> Opts.helper) Opts.fullDesc
@@ -60,4 +66,4 @@ main = do
   when (checkRebased opts) checkRebasedOnMaster
   submitted <- listSubmitted @Assignment
   unless (allowMany opts) $ checkOneSubmitted submitted
-  unless (checkOnly opts) $ mapM_ runTest submitted
+  unless (checkOnly opts) $ mapM runTest submitted >>= checkError . and

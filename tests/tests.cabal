@@ -9,11 +9,15 @@ library
   hs-source-dirs: lib
   build-depends: 
     base, 
-    attoparsec ^>= 0.14, 
+    transformers,
+    async ^>= 2.2,
     directory ^>= 1.3,
+    filepath ^>= 1.4,
     text ^>= 2.0,
-    shelly >= 1.9,
-    junit-xml >= 0.1
+    hspec,
+    junit-xml >= 0.1,
+    attoparsec ^>= 0.14, 
+    simple-cmd ^>= 0.2
 
 -- Test suites
 executable check-assignments
@@ -25,7 +29,7 @@ executable check-assignments
     optparse-applicative,
     attoparsec, 
     directory,
-    shelly >= 1.9,
+    simple-cmd ^>= 0.2,
     junit-xml >= 0.1,
     hspec, QuickCheck, hspec-junit-formatter == 1.0.1.0, hspec-core, random, conduit,
     statistics,
