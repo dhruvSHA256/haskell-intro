@@ -4,6 +4,7 @@ module Main where
 
 import Prelude hiding (concat, inits)
 
+import Data.Char
 import Test.Hspec
 import Test.Hspec.Core.Runner
 import C
@@ -43,14 +44,14 @@ main = hspec $ do
   describe "C-7" $ do
     it "Example 1" $ inits [1,2,3] `shouldBe` [[],[1],[1,2],[1,2,3]]
     it "Example 2" $ inits "Haskell" `shouldBe` ["","H","Ha","Has","Hask","Haske","Haskel","Haskell"]
-    it "Example 3" $ inits [] `shouldBe` [[]]
+    it "Example 3" $ inits @[Int] [] `shouldBe` [[]]
   describe "C-8" $ do
     it "Example 1" $ mapBinTree (: []) tree3 `shouldBe` Bin (Bin Empty "x" Empty) "a" (Bin Empty "y" Empty)
     it "Example 2" $ mapBinTree toUpper tree4 `shouldBe` Bin (Bin (Bin Empty 'X' Empty) 'A' (Bin Empty 'Y' Empty)) 'B' (Bin Empty 'X' Empty)
     it "Example 3" $ mapBinTree (const 3) tree5 `shouldBe` Bin Empty 3 (Bin (Bin (Bin Empty 3 Empty) 3 (Bin Empty 3 Empty)) 3 (Bin Empty 3 Empty))
-    it "Example 4" $ mapBinTree (+1) Empty `shouldBe` Empty
+    it "Example 4" $ mapBinTree (+1) Empty `shouldBe` (Empty  :: BinTree Int)
   describe "C-9" $ do
-    it "Example 1" $ labelTree Empty `shouldBe` Empty
+    it "Example 1" $ labelTree @(BinTree Int) Empty `shouldBe` Empty
     it "Example 2" $ labelTree tree1 `shouldBe` Bin Empty ('x',1) Empty
     it "Example 3" $ labelTree tree4 `shouldBe` Bin (Bin (Bin Empty ('x',1) Empty) ('a',2) (Bin Empty ('y',3) Empty)) ('b',4) (Bin Empty ('x',5) Empty)
     it "Example 4" $ labelTree tree6 `shouldBe` Bin (Bin Empty ('c',1) (Bin (Bin (Bin Empty ('x',2) Empty) ('a',3) (Bin Empty ('y',4) Empty)) ('b',5) (Bin Empty ('x',6) Empty))) ('d',7) (Bin (Bin (Bin Empty ('x',8) Empty) ('a',9) (Bin Empty ('y',10) Empty)) ('b',11) (Bin Empty ('x',12) Empty))
