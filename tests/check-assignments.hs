@@ -39,7 +39,7 @@ instance IsAssignment Assignment where
   srcPath AssignmentE = "assignments/e/E.hs"
   srcPath AssignmentF = "assignments/f/F.hs"
 
-  testEntries AssignmentA = ["tests/complete/ATest.hs"]
+  testEntries AssignmentA = ["tests/examples/ATest.hs", "tests/complete/ATest.hs"]
   testEntries AssignmentB = ["tests/complete/BTest.hs"]
   testEntries AssignmentC = ["tests/examples/CTest.hs", "tests/complete/CTest.hs"]
   testEntries AssignmentD = ["tests/complete/DTest.hs"]
