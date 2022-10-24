@@ -10,12 +10,12 @@ import Control.Applicative (many)
 import Data.Char (isSpace)
 import Data.Maybe (mapMaybe, isJust)
 import Data.Functor (($>))
-import Data.List (isInfixOf)
+import Data.List ( isInfixOf, dropWhileEnd )
 import Text.XML.JUnit (writeXmlReport, inSuite, failed, passed, failureMessage, stdout, failureStackTrace)
 import Data.Function ((&))
 import System.Exit (exitFailure)
-import Control.Monad (filterM)
-import System.Directory (doesFileExist)
+import Control.Monad ( filterM, void )
+import System.Directory ( doesFileExist, getCurrentDirectory )
 import Test.Hspec
 
 import Control.Concurrent (threadDelay)
@@ -23,9 +23,8 @@ import Control.Concurrent.Async (race)
 
 import System.Environment (getExecutablePath)
 import System.FilePath (dropExtension, (</>), takeDirectory)
-import System.Directory (getCurrentDirectory)
 
-import SimpleCmd (cmd_, cmd, cmdBool, cmdFull, cmdMaybe, cmdSilent)
+import SimpleCmd (cmd_, cmd, cmdBool, cmdFull, cmdMaybe, cmdSilent, cmdStdIn)
 import Control.Monad.Trans.Maybe (runMaybeT)
 import Control.Monad.Trans.Class (lift)
 
@@ -119,22 +118,58 @@ getExecutableDir = takeDirectory <$> getExecutablePath
 
 -- | Checks if solution uses constant memory.
 -- Argument is a Haskell source file which is compiled
--- and then run with '-M1m' option. 
+-- and then run with '-M5m' option. 
 -- It expects that program completes successfully.
+--
+-- The 'src' argument is assumed to be a path to program that
+-- should be compiled and run relative to the executable
+-- path of the executable that calls this function.
+--
+-- We need that because we use @cabal exec ghc@ to compile
+-- 'src', so we cannot change the work dir. 
 runsInConstantMemory :: FilePath -> Expectation
 runsInConstantMemory src = do
   dir <- getExecutableDir
-  result <- race timeOut (test dir)
+  result <- timeOut 3 (test dir)
   case result of
-    Right True -> pure ()
-    Right False -> expectationFailure "Heap exhausted: solution does not use constant memory"
+    Right (Right True) -> pure ()
+    Right (Right False) -> expectationFailure "Process exited with non-zero code"
+    Right (Left _) -> expectationFailure "Heap exhausted: solution does not use constant memory"
     Left () -> expectationFailure "Solution did not finish within 3s"
   where
     test dir = do
       let src' = dir </> src
       cmdSilent "cabal" ["exec", "ghc", "--", "-rtsopts", "-fforce-recomp", src']
       (ecode, _, err) <- cmdFull (dropExtension src') ["+RTS", "-M5m"] ""
-      -- ecode <- lastExitCode   -- error code is 251 when heap is exhausted, but
-      -- not sure if we can trust it,
-      pure . not $ "Heap exhausted" `isInfixOf` err
-    timeOut = threadDelay (3 * second) >> pure ()
+      if "Heap exhausted" `isInfixOf` err
+         then pure $ Left ()
+         else pure $ Right ecode
+
+-- | Run program with stdin as input and verify if output is stdout
+-- It timeouts after 3s
+--
+-- All paths are assumed to be relative to the executable
+-- path of the executable that calls this function.
+--
+-- We need that because we use @cabal exec runhaskell@ to run
+-- 'prog', so we cannot change the work dir.
+testProg :: FilePath -> [FilePath] -> FilePath -> FilePath -> Expectation
+testProg prog args input output = do
+  dir <- getExecutableDir
+  let test = readFile (dir </> input) >>= cmdStdIn "cabal" params
+      params = ["exec", "runhaskell", "--", dir </> prog] <> args
+
+  result <- timeOut 3 test
+  case result of
+    Right out -> readFile (dir </> output) >>= (trimLines out `shouldBe`)
+    Left () -> expectationFailure $ prog <> " did not finish within 3s"
+  where
+    trimLines = unlines . fmap trim . lines
+    trim = dropWhileEnd isSpace . dropWhile isSpace
+
+-- | Run given IO action with a timeout (in seconds)
+timeOut :: Int -> IO a -> IO (Either () a)
+timeOut n = race wait
+  where
+    wait = void $ threadDelay (n * second)
+
