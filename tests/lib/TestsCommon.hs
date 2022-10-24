@@ -45,7 +45,7 @@ pAssignment = choice $ fmap (\e -> string (srcPath e) $> e) [minBound .. maxBoun
 -- | Lists submitted assignments
 listSubmitted :: IsAssignment a => IO [a]
 listSubmitted = do
-  diffs <- cmd "git" ["--no-pager", "diff", "--stat", "main", "assignments/"]
+  diffs <- cmd "git" ["--no-pager", "diff", "--stat", "main...", "assignments/"]
   pure . mapMaybe (hush . parseOnly (takeWhile isSpace *> pAssignment) . T.pack) . lines $ diffs
 
 -- | Executes `cabal exec runghc --` with provided options. 
