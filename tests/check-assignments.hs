@@ -44,7 +44,7 @@ instance IsAssignment Assignment where
   testEntries AssignmentC = ["tests/examples/CTest.hs", "tests/complete/CTest.hs"]
   testEntries AssignmentD = ["tests/examples/DTest.hs", "tests/complete/DTest.hs"]
   testEntries AssignmentE = ["tests/complete/ETest.hs"]
-  testEntries AssignmentF = ["tests/complete/FTest.hs"]
+  testEntries AssignmentF = ["tests/examples/FTest.hs", "tests/complete/FTest.hs"]
 
 
 data CLIOpts = CLIOpts { checkOnly :: Bool, allowMany :: Bool, checkRebased :: Bool }
