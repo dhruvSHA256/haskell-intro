@@ -34,7 +34,6 @@ check:
     - git fetch origin main:main
     - |
       git clone --depth 1 https://gitlab-ci-token:${CI_JOB_TOKEN}@code.well-typed.com/assignments/haskell-intro-tests.git tests/complete
-    - cabal build
     - cabal run check-assignments -- --check-only
   cache:
     key: "test"
@@ -58,7 +57,6 @@ tests:
     - git fetch origin main:main
     - |
       git clone --depth 1 https://gitlab-ci-token:${CI_JOB_TOKEN}@code.well-typed.com/assignments/haskell-intro-tests.git tests/complete
-    - cabal build
     - cabal run check-assignments
   cache:
     key: "test"
