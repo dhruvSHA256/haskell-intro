@@ -4,7 +4,7 @@ cradle:
       config:
         cradle:
           cabal:
-    - path: "demo/"
+    - path: "notes/"
       config:
         cradle:
           direct:

@@ -3,3 +3,7 @@ dist-newstyle/
 /tests/examples/*Test
 **/*.hi
 **/*.o
+notes/*
+!notes/README.md
+spec-out/
+tests/complete
