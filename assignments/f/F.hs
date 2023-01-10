@@ -147,8 +147,9 @@ navigate = error "TODO: define navigate"
 --
 -- Define a function 'play' that allows you to play a level interactively.
 -- Print suitable error messages in error situations, allow the player to
--- continue if it is a error based on user input, end the program with an
--- appropriate message if the player reaches the Pit (pointer with no way out).
+-- continue if it is an error based on user input, and end the program with an
+-- appropriate message if the player reaches a room with no way out (such as
+-- the Pit).
 --
 -- You can use the function 'parseDir' given below.
 
