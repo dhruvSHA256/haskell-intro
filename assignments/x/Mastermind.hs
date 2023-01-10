@@ -18,7 +18,7 @@ import Text.Read
 --
 -- Mastermind is a game for two players, called the *codemaker* and the
 -- *codebreaker*. The codemaker's role is played by the computer in our case.
--- The codemaker devises a codemade up of four positions, each position being
+-- The codemaker devises a code made up of four positions, each position being
 -- one of six colors. For simplicity of interaction, the colors are represented
 -- as numbers. The codebreaker (played by the human user of your program)
 -- must guess the code in as few turns as possible. After each guess, two scores
@@ -127,7 +127,7 @@ props_extract =
 
 -- Task 2.
 --
--- Define a function 'matches' that counts the number of simulatenously
+-- Define a function 'matches' that counts the number of simultaneously
 -- matching elements between two lists. An element in one list matches an
 -- element in the other list if the two elements are equal. Simultaneous
 -- matches cannot involve the same list elements more than once.
@@ -137,7 +137,7 @@ props_extract =
 matches :: Eq a => [a] -> [a] -> Int
 matches = error "TODO"
 
--- | Property of 'matches': The 5 cannot simulatenously match both 5s in the other list.
+-- | Property of 'matches': The 5 cannot simultaneously match both 5s in the other list.
 prop_matches1 :: Bool
 prop_matches1 = matches ([5] :: [Int]) [5,5] == 1
 
