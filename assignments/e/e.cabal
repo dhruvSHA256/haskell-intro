@@ -1,0 +1,9 @@
+cabal-version: 2.0
+name: e
+version: 0.1
+build-type: Simple
+
+library
+  default-language: Haskell2010
+  build-depends: base, random >= 1.2, directory >= 1.3
+  exposed-modules: E
