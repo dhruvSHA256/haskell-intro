@@ -1,4 +1,4 @@
-image: kosmikus/debian-ghc:10-8.10.4
+image: code.well-typed.com:5050/assignments/haskell-intro-tests:v2
 
 stages:
   - prepare
@@ -32,8 +32,6 @@ check:
   script:
     # we need to fetch main branch, as by default gitlab CI only clones single branch
     - git fetch origin main:main
-    - |
-      git clone --depth 1 https://gitlab-ci-token:${CI_JOB_TOKEN}@code.well-typed.com/assignments/haskell-intro-tests.git tests/complete
     - cabal run check-assignments -- --check-only
   cache:
     key: "test"
@@ -55,8 +53,8 @@ tests:
   script:
     # we need to fetch main branch, as by default gitlab CI only clones single branch
     - git fetch origin main:main
-    - |
-      git clone --depth 1 https://gitlab-ci-token:${CI_JOB_TOKEN}@code.well-typed.com/assignments/haskell-intro-tests.git tests/complete
+    # tests are embedded in the docker image
+    - rm -f tests/complete && ln -s /tests tests/complete
     - cabal run check-assignments
   cache:
     key: "test"
