@@ -1,42 +1,20 @@
 image: code.well-typed.com:5050/assignments/haskell-intro-tests:v2
 
 stages:
-  - prepare
   - check
   - test
-
-deps:
-  stage: prepare
-  only:
-    - merge_requests
-  before_script:
-    - export CABAL_DIR="$PWD/.localcabal"
-    - ghc --version
-    - cabal --version
-    - cabal v2-update
-  script:
-    - cabal build --dependencies-only --enable-tests all
-  cache:
-    key: "test"
-    paths:
-      - .localcabal/
 
 check:
   stage: check
   only:
     - merge_requests
   before_script:
-    - export CABAL_DIR="$PWD/.localcabal"
     - ghc --version
     - cabal --version
   script:
     # we need to fetch main branch, as by default gitlab CI only clones single branch
     - git fetch origin main:main
     - cabal run check-assignments -- --check-only
-  cache:
-    key: "test"
-    paths:
-      - .localcabal/
   artifacts:
     when: always
     reports:
@@ -47,7 +25,6 @@ tests:
   only:
     - merge_requests
   before_script:
-    - export CABAL_DIR="$PWD/.localcabal"
     - ghc --version
     - cabal --version
   script:
@@ -56,10 +33,6 @@ tests:
     # tests are embedded in the docker image
     - rm -f tests/complete && ln -s /tests tests/complete
     - cabal run check-assignments
-  cache:
-    key: "test"
-    paths:
-      - .localcabal/
   artifacts:
     when: always
     reports:
