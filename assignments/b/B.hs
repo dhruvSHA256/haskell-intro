@@ -109,8 +109,8 @@ mkMonth x
 --
 
 mapMaybe :: (a -> b) -> Maybe a -> Maybe b
-mapMaybe = error "TODO: define mapMaybe"
-
+mapMaybe _ Nothing = Nothing
+mapMaybe fn (Just x) = Just (fn x)
 -- Task B-4.
 --
 -- Implement a function that evaluates two 'Maybe's,
@@ -133,7 +133,9 @@ mapMaybe = error "TODO: define mapMaybe"
 --
 
 pairMaybe :: Maybe a -> Maybe b -> Maybe (a, b)
-pairMaybe = error "TODO: define pairMaybe"
+pairMaybe (Just x) (Just y) = Just (x,y)
+pairMaybe _ Nothing = Nothing
+pairMaybe Nothing _ = Nothing
 
 -- Task B-5.
 --
@@ -162,7 +164,9 @@ pairMaybe = error "TODO: define pairMaybe"
 -- Just "foobar"
 
 liftMaybe :: (a -> b -> c) -> Maybe a -> Maybe b -> Maybe c
-liftMaybe = error "TODO: define liftMaybe"
+liftMaybe fn (Just x) (Just y) = Just (fn x y) 
+liftMaybe _ Nothing _ = Nothing
+liftMaybe _ _ Nothing = Nothing
 
 -- Task B-6.
 --
@@ -174,7 +178,7 @@ liftMaybe = error "TODO: define liftMaybe"
 -- definition of 'pairMaybe'.
 
 pairMaybe' :: Maybe a -> Maybe b -> Maybe (a, b)
-pairMaybe' = error "TODO: define pairMaybe'"
+pairMaybe' a b = liftMaybe (,) a b
 
 -- Task B-7.
 --
