@@ -52,7 +52,8 @@ data Choice = Rock | Paper | Scissors
 -- True
 
 isPaper :: Choice -> Bool
-isPaper = error "TODO: implement isPaper"
+isPaper Paper = True
+isPaper _ = False
 
 
 -- The general structure for defining functions on lists is to follow
@@ -95,7 +96,8 @@ isPaper = error "TODO: implement isPaper"
 -- directly via pattern matching.
 
 null :: [a] -> Bool
-null = error "TODO: implement null"
+null [] = True
+null _ = False
 
 -- Task A-3:
 --
@@ -107,6 +109,8 @@ null = error "TODO: implement null"
 -- null3 xs = length xs == 0
 --
 -- PLEASE ANSWER THE QUESTION HERE
+-- both of them are more computationally more expensive and need traversing the whole list
+-- null3 for [1..] will run continuously without producing any output
 
 -- Task A-4:
 --
@@ -123,7 +127,8 @@ null = error "TODO: implement null"
 -- length "foo"         -- strings are lists of characters in Haskell
 
 length :: [a] -> Int
-length = error "TODO: implement length"
+length [] = 0
+length (_:xs) = 1 + length xs
 
 -- Task A-5:
 --
@@ -142,7 +147,8 @@ length = error "TODO: implement length"
 -- False
 
 noPaper :: [Choice] -> Bool
-noPaper = error "TODO: implement noPaper"
+noPaper [] = True
+noPaper (x:xs) = not (isPaper x) && noPaper xs
 
 -- Task A-6:
 --
@@ -160,8 +166,8 @@ noPaper = error "TODO: implement noPaper"
 -- 102
 
 sum :: [Int] -> Int
-sum = error "TODO: implement sum"
-
+sum [] = 0
+sum (x:xs) = x + sum xs
 -- Task A-7:
 --
 -- Here is our self-defined 'List' type again. Define functions
@@ -181,10 +187,12 @@ data List a = Nil | Cons a (List a)
   deriving Show
 
 from :: List a -> [a]
-from = error "TODO: implement from"
+from Nil = []
+from (Cons x xs) = x:from xs
 
 to :: [a] -> List a
-to = error "TODO: implement to"
+to [] = Nil
+to (x:xs) = Cons x (to xs)
 
 -- Task A-8:
 --
@@ -211,8 +219,8 @@ to = error "TODO: implement to"
 -- []
 
 evens :: [Int] -> [Int]
-evens = error "TODO: implement evens"
-
+evens [] = []
+evens (x:xs) = if even x then x : evens xs else evens xs 
 -- Task A-9:
 --
 -- The function 'sumEvenSquares' should go through a list of integers,
@@ -231,7 +239,8 @@ evens = error "TODO: implement evens"
 -- standard functions.
 
 sumEvenSquares :: [Int] -> Int
-sumEvenSquares = error "TODO: implement sumEvenSquares"
+sumEvenSquares [] = 0
+sumEvenSquares (x:xs) = if even x then x*x + sumEvenSquares xs else sumEvenSquares xs 
 
 -- Task A-10:
 --
@@ -252,7 +261,8 @@ sumEvenSquares = error "TODO: implement sumEvenSquares"
 -- False
 
 allEven :: [Int] -> Bool
-allEven = error "TODO: implement allEven"
+allEven [] = True
+allEven (x:xs) = even x && allEven xs 
 
 -- Task A-11:
 --
@@ -277,7 +287,9 @@ allEven = error "TODO: implement allEven"
 -- False
 
 isAscending :: [Int] -> Bool
-isAscending = error "TODO: implement isAscending"
+isAscending [] = True
+isAscending [_] = True
+isAscending (x:y:xs) = x < y && isAscending (y:xs)
 
 -- Task A-12:
 --
@@ -298,7 +310,9 @@ isAscending = error "TODO: implement isAscending"
 data Nat = Zero | Suc Nat
   deriving Show
 
-fromNat = error "TODO: implement fromNat, add a type signature yourself"
+fromNat :: Num a => Nat -> a
+fromNat Zero = 0
+fromNat (Suc x) = 1 + fromNat x
 
 -- Task A-13:
 --
@@ -309,4 +323,5 @@ fromNat = error "TODO: implement fromNat, add a type signature yourself"
 -- recursive for 'Suc', so use recursion in that case.
 
 add :: Nat -> Nat -> Nat
-add = error "TODO: implement add"
+add Zero y = y
+add (Suc x) y = Suc (add x y) 
