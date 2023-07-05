@@ -33,7 +33,9 @@ import Control.Applicative ((<|>), liftA2)
 --
 
 collapse :: Either [Int] Int -> Int
-collapse = error "TODO: define collapse"
+collapse (Left []) = 0
+collapse (Right x) = x 
+collapse (Left (x:xs)) = x + collapse (Left xs)
 
 -- Task B-2.
 --
@@ -83,7 +85,9 @@ newtype Month = MkMonth Int
   deriving Show
 
 mkMonth :: Int -> Maybe Month
-mkMonth = error "TODO: define mkMonth"
+mkMonth x 
+  | x > 0 && x <= 12 = Just (MkMonth x)
+  | otherwise = Nothing
 
 -- Task B-3.
 --
