@@ -35,7 +35,7 @@ import Control.Applicative ((<|>), liftA2)
 collapse :: Either [Int] Int -> Int
 collapse (Left []) = 0
 collapse (Right x) = x
-collapse (Left (x:xs)) = x + collapse (Left xs)
+collapse (Left x) = sum x
 
 -- Task B-2.
 --
@@ -178,7 +178,7 @@ liftMaybe _ _ Nothing = Nothing
 -- definition of 'pairMaybe'.
 
 pairMaybe' :: Maybe a -> Maybe b -> Maybe (a, b)
-pairMaybe' a b = liftMaybe (,) a b
+pairMaybe' = liftMaybe (,)
 
 -- Task B-7.
 --
@@ -568,7 +568,6 @@ follow :: Path -> Tree a -> Maybe a
 follow (LeftChild path) (Node x _) = follow path x
 follow (RightChild path) (Node _ y) = follow path y
 follow End (Leaf x) = Just x
-follow End _ = Nothing
 follow _ _ = Nothing
 
 -- Task B-23.
