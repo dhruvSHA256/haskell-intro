@@ -33,7 +33,9 @@ import Control.Applicative ((<|>), liftA2)
 --
 
 collapse :: Either [Int] Int -> Int
-collapse = error "TODO: define collapse"
+collapse (Left []) = 0
+collapse (Right x) = x
+collapse (Left x) = sum x
 
 -- Task B-2.
 --
@@ -83,7 +85,9 @@ newtype Month = MkMonth Int
   deriving Show
 
 mkMonth :: Int -> Maybe Month
-mkMonth = error "TODO: define mkMonth"
+mkMonth x
+  | x > 0 && x <= 12 = Just (MkMonth x)
+  | otherwise = Nothing
 
 -- Task B-3.
 --
@@ -105,8 +109,8 @@ mkMonth = error "TODO: define mkMonth"
 --
 
 mapMaybe :: (a -> b) -> Maybe a -> Maybe b
-mapMaybe = error "TODO: define mapMaybe"
-
+mapMaybe _ Nothing = Nothing
+mapMaybe fn (Just x) = Just (fn x)
 -- Task B-4.
 --
 -- Implement a function that evaluates two 'Maybe's,
@@ -129,7 +133,9 @@ mapMaybe = error "TODO: define mapMaybe"
 --
 
 pairMaybe :: Maybe a -> Maybe b -> Maybe (a, b)
-pairMaybe = error "TODO: define pairMaybe"
+pairMaybe (Just x) (Just y) = Just (x,y)
+pairMaybe _ Nothing = Nothing
+pairMaybe Nothing _ = Nothing
 
 -- Task B-5.
 --
@@ -158,7 +164,9 @@ pairMaybe = error "TODO: define pairMaybe"
 -- Just "foobar"
 
 liftMaybe :: (a -> b -> c) -> Maybe a -> Maybe b -> Maybe c
-liftMaybe = error "TODO: define liftMaybe"
+liftMaybe fn (Just x) (Just y) = Just (fn x y)
+liftMaybe _ Nothing _ = Nothing
+liftMaybe _ _ Nothing = Nothing
 
 -- Task B-6.
 --
@@ -170,7 +178,7 @@ liftMaybe = error "TODO: define liftMaybe"
 -- definition of 'pairMaybe'.
 
 pairMaybe' :: Maybe a -> Maybe b -> Maybe (a, b)
-pairMaybe' = error "TODO: define pairMaybe'"
+pairMaybe' = liftMaybe (,)
 
 -- Task B-7.
 --
@@ -202,7 +210,8 @@ pairMaybe' = error "TODO: define pairMaybe'"
 --
 
 lookups :: Eq a => [a] -> [(a, b)] -> Maybe [b]
-lookups = error "TODO: define lookups"
+lookups [] _ = Just []
+lookups (key:keys) table = liftMaybe (:) (lookup key table) (lookups keys table)
 
 -- Task B-8.
 --
@@ -212,7 +221,8 @@ lookups = error "TODO: define lookups"
 -- function '++' in the recursive case.
 
 reverse :: [a] -> [a]
-reverse = error "TODO: define reverse"
+reverse [] = []
+reverse (x:xs) = reverse xs ++ [x]
 
 -- Task B-9.
 --
@@ -233,7 +243,8 @@ reverse = error "TODO: define reverse"
 --
 
 reverseAcc :: [a] -> [a] -> [a]
-reverseAcc = error "TODO: define reverseAcc"
+reverseAcc x [] = x
+reverseAcc x (y:ys) = reverseAcc (y : x) ys
 
 -- Task B-10.
 --
@@ -256,6 +267,10 @@ reverseAcc = error "TODO: define reverseAcc"
 -- than the other? Why?
 --
 -- PLEASE ANSWER THE QUESTION HERE
+-- reverse' is faster as it doesnt require the whole list,
+-- just the first element of the list which is yet to be reversed
+-- and add it to the beginning of accumulated list
+-- and adding element at beginning of list is faster
 
 reverse' :: [a] -> [a]
 reverse' = reverseAcc []
@@ -281,7 +296,9 @@ reverse' = reverseAcc []
 --
 
 replicate :: Int -> a -> [a]
-replicate = error "TODO: define replicate"
+replicate n x
+  | n > 0 = x : replicate (n-1) x
+  | otherwise = []
 
 -- Task B-12.
 --
@@ -297,7 +314,7 @@ replicate = error "TODO: define replicate"
 --
 
 repeat :: a -> [a]
-repeat = error "TODO: define repeat"
+repeat a = a : repeat a
 
 -- Task B-13.
 --
@@ -306,7 +323,7 @@ repeat = error "TODO: define repeat"
 --
 
 replicate' :: Int -> a -> [a]
-replicate' = error "TODO: define replicate'"
+replicate' n a = take n (repeat a)
 
 -- Task B-14.
 --
@@ -362,7 +379,8 @@ tree5 :: Tree Int
 tree5 = Node (Leaf 3) (Leaf 3)
 
 mapTree :: (a -> b) -> Tree a -> Tree b
-mapTree = error "TODO: implement mapTree"
+mapTree fn (Leaf x) = Leaf (fn x)
+mapTree fn (Node x y) = Node (mapTree fn x) (mapTree fn y)
 
 -- Task B-15.
 --
@@ -383,7 +401,9 @@ mapTree = error "TODO: implement mapTree"
 --
 
 sameShape :: Tree a -> Tree b -> Bool
-sameShape = error "TODO: implement sameShape'"
+sameShape (Leaf _) (Leaf _) = True
+sameShape (Node x y) (Node a b) = sameShape x a && sameShape y b
+sameShape _ _ = False
 
 -- Task B-16.
 --
@@ -402,7 +422,7 @@ sameShape = error "TODO: implement sameShape'"
 --   () :: ()
 
 sameShape' :: Tree a -> Tree b -> Bool
-sameShape' = error "TODO: implement sameShape'"
+sameShape' left right = mapTree (\_ -> ()) left == mapTree (\_ -> ()) right
 
 -- Task B-17.
 --
@@ -426,7 +446,9 @@ sameShape' = error "TODO: implement sameShape'"
 --
 
 buildTree :: Int -> Tree ()
-buildTree = error "TODO: implement buildTree"
+buildTree n
+  | n <= 0 = Leaf ()
+  | otherwise = Node (buildTree (n-1)) (buildTree (n-1))
 
 -- Task B-18.
 --
@@ -457,6 +479,7 @@ buildTree = error "TODO: implement buildTree"
 data Expr =
     Lit Int
   | Add Expr Expr
+  | Mul Expr Expr
   | Neg Expr
   | IfZero Expr Expr Expr
   deriving (Eq, Show)
@@ -468,7 +491,14 @@ expr2 :: Expr
 expr2 = IfZero expr1 (Lit 1) (Lit 0)
 
 eval :: Expr -> Int
-eval = error "TODO: implement eval"
+eval (Lit x) = x
+eval (Neg x) = -(eval x)
+eval (Add x y) = eval x + eval y
+eval (Mul x y) = eval x * eval y
+eval (IfZero cond branch1 branch2)
+  | eval cond == 0 = eval branch1
+  | otherwise = eval branch2
+
 
 prop_eval1 :: Bool
 prop_eval1 = eval expr1 == -8
@@ -491,7 +521,11 @@ prop_eval2 = eval expr2 == 0
 --
 
 countOps :: Expr -> Int
-countOps = error "TODO: implement countOps"
+countOps (Lit _) = 0
+countOps (Neg x) = 1 + countOps x
+countOps (Add x y) = 1 + countOps x + countOps y
+countOps (Mul x y) = 1 + countOps x + countOps y
+countOps (IfZero c x y) = 1 + countOps c + countOps x + countOps y
 
 -- Task B-20.
 --
@@ -513,7 +547,7 @@ countOps = error "TODO: implement countOps"
 -- down to the right subtree and continue -- so
 -- there should be three constructors.
 
-data Path = ToBeDefined -- placeholder; replace with definition
+data Path = End | LeftChild Path | RightChild Path
   deriving (Eq, Show)
 
 -- Task B-22.
@@ -531,7 +565,10 @@ data Path = ToBeDefined -- placeholder; replace with definition
 --
 
 follow :: Path -> Tree a -> Maybe a
-follow = error "TODO: implement follow"
+follow (LeftChild path) (Node x _) = follow path x
+follow (RightChild path) (Node _ y) = follow path y
+follow End (Leaf x) = Just x
+follow _ _ = Nothing
 
 -- Task B-23.
 --
@@ -546,6 +583,12 @@ follow = error "TODO: implement follow"
 -- by pattern matching, however, is quite hard.)
 --
 
+orelse :: Maybe a -> Maybe a -> Maybe a
+orelse Nothing y = y
+orelse (Just x) _ = Just x
 search :: Eq a => a -> Tree a -> Maybe Path
-search = error "TODO: implement search"
-
+-- if present at left check left orelse check right
+search target (Leaf x) 
+  | target == x = Just End
+  | otherwise = Nothing
+search target (Node l r) = mapMaybe LeftChild (search target l) `orelse` mapMaybe RightChild (search target r)
