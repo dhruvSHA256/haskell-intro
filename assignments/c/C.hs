@@ -16,8 +16,11 @@ import Prelude hiding (concat, product, take)
 -- Define 'product' using an explicit strict accumulator.
 --
 
+productAux :: Num t => t -> [t] -> t
+productAux !aux [] = aux
+productAux !aux (x:xs) = productAux (aux*x) xs
 product :: Num a => [a] -> a
-product = error "TODO: define product (using a strict accumulator)"
+product = productAux 1
 
 -- Task C-2.
 --
@@ -26,7 +29,7 @@ product = error "TODO: define product (using a strict accumulator)"
 --
 
 product' :: Num a => [a] -> a
-product' = error "TODO: define product' as a fold"
+product' = foldl' (*) 1
 
 -- Task C-3.
 --
@@ -58,8 +61,17 @@ product' = error "TODO: define product' as a fold"
 -- 4
 --
 
+-- isStringSpace :: [Char] -> Bool
+-- isStringSpace [] = True
+-- isStringSpace (x:xs) = isSpace x && isStringSpace xs
+-- countWhiteSpaceStrings :: [String] -> Int
+-- countWhiteSpaceStrings [] = 0
+-- countWhiteSpaceStrings (x:xs)
+--   | isStringSpace x = 1 + countWhiteSpaceStrings xs
+--   | otherwise = countWhiteSpaceStrings xs
 countWhiteSpaceStrings :: [String] -> Int
-countWhiteSpaceStrings = error "TODO: implement countWhiteSpaceStrings as a composition of other functions"
+-- countWhiteSpaceStrings = length (filter (all isSpace))
+countWhiteSpaceStrings = length . filter (all isSpace)
 
 -- Task C-4.
 --
@@ -80,21 +92,22 @@ countWhiteSpaceStrings = error "TODO: implement countWhiteSpaceStrings as a comp
 -- Examples:
 --
 -- >>> removeLongWords 8 "Haskell is a wonderful language"
--- "Haskell is a language"
+-- "wonderful"
 -- >>> removeLongWords 2 "Haskell is a wonderful language"
--- "is a"
+-- "Haskell wonderful language"
 -- >>> removeLongWords 1 "Haskell is a wonderful language"
--- "a"
+-- "Haskell is wonderful language"
 -- >>> removeLongWords 0 "Haskell is a wonderful language"
--- ""
+-- "Haskell is a wonderful language"
 -- >>> removeLongWords 10 "  Superfluous  whitespace    is removed   "
--- "whitespace is removed"
+-- "Superfluous"
 -- >>> removeLongWords 14 "  Superfluous  whitespace    is removed   "
--- "Superfluous whitespace is removed"
+-- ""
 --
 
 removeLongWords :: Int -> String -> String
-removeLongWords n = error "TODO: implement removeLongWords as a composition of other functions"
+-- removeLongWords n x = unwords (filter (\xx -> length xx > n) (words x))
+removeLongWords n = unwords . filter (\xx -> length xx <= n) . words 
 
 -- Task C-5.
 --
@@ -119,7 +132,7 @@ removeLongWords n = error "TODO: implement removeLongWords as a composition of o
 --
 
 concat :: [[a]] -> [a]
-concat = error "TODO: implement concat as a fold"
+concat = foldr (++) []
 
 -- Task C-6.
 --
@@ -185,10 +198,13 @@ origin :: Pos
 origin = MkPos 0 0
 
 goDir :: Pos -> Dir -> Pos
-goDir = error "TODO: implement goDir"
+goDir (MkPos up right) Up = MkPos (up+1) right
+goDir (MkPos up right) Rgt = MkPos up (right+1)
+goDir (MkPos up right) Down = MkPos (up-1) right
+goDir (MkPos up right) Lft = MkPos up (right-1)
 
 goDirs :: Pos -> [Dir] -> Pos
-goDirs = error "TODO: implement goDirs using foldl'"
+goDirs =  foldl' goDir
 
 -- Task C-7.
 --
@@ -210,7 +226,13 @@ goDirs = error "TODO: implement goDirs using foldl'"
 --
 
 inits :: [a] -> [[a]]
-inits = error "TODO: implement inits as a fold"
+-- inits = initsAux 0
+-- initsAux :: Int -> [a] -> [[a]]
+-- initsAux n x 
+--   | n > length x = []
+--   | otherwise = take n x : initsAux (n+1) x
+-- inits = foldr fn init_arr
+inits = foldr (\x prefs -> [] : map (x:) prefs) [[]]
 
 -- These are binary trees with labels in their nodes.
 
@@ -259,7 +281,9 @@ tree5 = Bin Empty 'c' tree4
 tree6 :: BinTree Char
 tree6 = Bin tree5 'd' tree4
 
-mapBinTree = error "TODO: implement mapBinTree, providing a type signature yourself"
+mapBinTree :: (t -> a) -> BinTree t -> BinTree a
+mapBinTree _ Empty = Empty
+mapBinTree fn (Bin left x right) = Bin (mapBinTree fn left) (fn x) (mapBinTree fn right)
 
 -- Task C-9.
 --
@@ -288,8 +312,15 @@ mapBinTree = error "TODO: implement mapBinTree, providing a type signature yours
 -- Bin (Bin Empty ('c',1) (Bin (Bin (Bin Empty ('x',2) Empty) ('a',3) (Bin Empty ('y',4) Empty)) ('b',5) (Bin Empty ('x',6) Empty))) ('d',7) (Bin (Bin (Bin Empty ('x',8) Empty) ('a',9) (Bin Empty ('y',10) Empty)) ('b',11) (Bin Empty ('x',12) Empty))
 --
 
+labelTreeAux :: Int -> BinTree a -> (BinTree (a, Int), Int)
+labelTreeAux n Empty = (Empty, n)
+labelTreeAux currLabel (Bin left x right) = (Bin labeledL (x, nextLabel) labeledR, labelToRet)
+  where 
+    (labeledL, nextLabel) = labelTreeAux currLabel left
+    (labeledR, labelToRet) = labelTreeAux (nextLabel+1) right
 labelTree :: BinTree a -> BinTree (a, Int)
-labelTree = error "TODO: implement labelTree"
+labelTree x = resultTree
+  where (resultTree, _) = labelTreeAux 1 x
 
 -- Task C-10.
 --
@@ -307,14 +338,16 @@ labelTree = error "TODO: implement labelTree"
 -- more guidance.
 --
 
-take :: Int -> [a] -> [a]
-take _ [] = []
-take n (x : xs)
-  | n > 0 = x : take (n - 1) xs
-  | otherwise = []
-
+-- take n arr = reverse (takeaux n arr)
+--     where
+--         takeaux n = foldl' fn []
+--             where
+--                 fn acc x = if length acc < n then x:acc else acc
 take' :: Int -> [a] -> [a]
-take' = error "TODO: implement take using foldr"
+take' n arr = foldr k z arr n
+  where 
+    z _ = []
+    k x g n' = if n' > 0 then x:g (n'-1) else []
 
 -- HINTS for some of the tasks
 --
