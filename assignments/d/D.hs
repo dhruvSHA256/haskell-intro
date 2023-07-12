@@ -129,13 +129,16 @@ cons y (x :| xs) = y:| (x:xs)
 -- ['a' :| "aaa",'x' :| "x",'a' :| "aaa",'x' :| ""]
 
 group :: Eq a => [a] -> [NonEmpty a]
-group [] = []
-group (x':xs') = go (x':|[]) xs'
-  where 
-    go acc [] = [acc]
-    go (x:|xTail) (y:remain)
-      | x == y = go (x:| (y:xTail)) remain 
-      | otherwise = x:|xTail : go (y:|[]) remain
+group [] = [] 
+group [x] = [x:|[]]
+group (x:xs) = 
+  let ( (y :| xTail) : remaining) = group xs
+  in 
+    if x == y then
+      (x:| (y:xTail)):remaining
+    else
+      (x:|[]) : ( (y:|xTail) : remaining)
+
 
 -- Task D-6.
 --
