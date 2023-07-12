@@ -4,11 +4,15 @@
 -- (c) 2017-2021 Andres Loeh, Well-Typed LLP
 
 {-# OPTIONS_GHC -Wall -Wno-unused-imports #-}
+{-# LANGUAGE InstanceSigs #-}
+{-# LANGUAGE DeriveFoldable #-}
 module D where
 
 import Data.List (sortBy)
 import Prelude hiding (head, tail)
 import Text.Read (readMaybe)
+import Data.Foldable (Foldable(toList))
+import Data.Ord (comparing)
 
 -- Task D-1:
 --
@@ -37,7 +41,9 @@ data IntOrString =
   deriving (Show, Read)
 
 classify :: String -> IntOrString
-classify = error "TODO: define classify, using readMaybe"
+classify x = case readMaybe x::Maybe Int of
+  Just n -> AnInt n
+  Nothing -> AString x
 
 -- Task D-2.
 --
@@ -63,6 +69,10 @@ classify = error "TODO: define classify, using readMaybe"
 --
 
 -- TODO: Define Eq instance for IntOrString
+instance Eq IntOrString where
+   AnInt x == AnInt y = x == y
+   AString _ == AString _ = True
+   _ == _ = False
 
 -- Task D-3.
 --
@@ -86,10 +96,12 @@ classify = error "TODO: define classify, using readMaybe"
 -- our own version here.)
 
 data NonEmpty a = a :| [a]
-  deriving Show
+  deriving (Show, Foldable)
 
-head = error "TODO: define head, give a type signature"
-tail = error "TODO: define tail, give a type siganture"
+head :: NonEmpty a -> a
+head (x :| _) = x
+tail :: NonEmpty a -> [a]
+tail (_ :| xs) = xs
 
 -- Task D-4.
 --
@@ -98,7 +110,7 @@ tail = error "TODO: define tail, give a type siganture"
 --
 
 cons :: a -> NonEmpty a -> NonEmpty a
-cons = error "TODO: define cons"
+cons y (x :| xs) = y:| (x:xs)
 
 -- Task D-5.
 --
@@ -117,7 +129,13 @@ cons = error "TODO: define cons"
 -- ['a' :| "aaa",'x' :| "x",'a' :| "aaa",'x' :| ""]
 
 group :: Eq a => [a] -> [NonEmpty a]
-group = error "TODO: define group"
+group [] = []
+group (x':xs') = go (x':|[]) xs'
+  where 
+    go acc [] = [acc]
+    go (x:|xTail) (y:remain)
+      | x == y = go (x:| (y:xTail)) remain 
+      | otherwise = x:|xTail : go (y:|[]) remain
 
 -- Task D-6.
 --
@@ -126,6 +144,8 @@ group = error "TODO: define group"
 -- same way as the derived instance would compute it.
 
 -- TODO: Define Eq instance for NonEmpty
+instance Eq a => Eq (NonEmpty a) where
+  (x:|xs) == (y:|ys) = x==y && xs==ys
 
 -- Task D-7:
 --
@@ -135,6 +155,9 @@ group = error "TODO: define group"
 -- datatype.
 
 -- TODO: Define Functor instance for NonEmpty
+instance Functor NonEmpty where
+  fmap :: (a -> b) -> NonEmpty a -> NonEmpty b
+  fmap f (x:|xs) = f x :| fmap f xs
 
 -- Task D-8:
 --
@@ -146,10 +169,24 @@ group = error "TODO: define group"
 --
 -- Convince yourself that functions such as
 -- 'toList', 'length', 'sum' and others work correctly.
+-- >>> toList (10:|[20,30,100])
+-- [10,20,30,100]
+
+-- >>> length (10:|[20,30,100])
+-- 4
+
+-- >>> sum (10:|[20,30,100])
+-- 160
 --
+-- >>> null (10:|[20,30,100])
+-- False
+
 -- What can you say about the 'null' function?
 --
 -- PLEASE ANSWER THE QUESTIONS HERE
+
+-- null will always return false for NonEmpty because its `suprise suprise`
+-- guranteed to be non empty :)
 
 -- Task D-9:
 --
@@ -172,8 +209,12 @@ group = error "TODO: define group"
 --
 
 sortDescending :: Ord a => [a] -> [a]
-sortDescending = error "TODO: define sortDescending using sortBy"
+sortDescending  = sortBy (flip compare)
 
 sortSnds :: Ord b => [(a,b)] -> [(a,b)]
-sortSnds = error "TODO: define sortSnds using sortBy"
+sortSnds = sortBy myComparator
+  where 
+    myComparator (_,y) (_,b) 
+      | y > b = GT
+      | otherwise = LT
 
