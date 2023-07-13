@@ -41,7 +41,7 @@ data IntOrString =
   deriving (Show, Read)
 
 classify :: String -> IntOrString
-classify x = case readMaybe x::Maybe Int of
+classify x = case readMaybe x of
   Just n -> AnInt n
   Nothing -> AString x
 
@@ -130,14 +130,9 @@ cons y (x :| xs) = y:| (x:xs)
 
 group :: Eq a => [a] -> [NonEmpty a]
 group [] = [] 
-group [x] = [x:|[]]
-group (x:xs) = 
-  let ( (y :| xTail) : remaining) = group xs
-  in 
-    if x == y then
-      (x:| (y:xTail)):remaining
-    else
-      (x:|[]) : ( (y:|xTail) : remaining)
+group (x : xs) =
+  let (grouped, rest) = span (== x) xs
+  in (x :| grouped) : group rest
 
 
 -- Task D-6.
@@ -217,7 +212,5 @@ sortDescending  = sortBy (flip compare)
 sortSnds :: Ord b => [(a,b)] -> [(a,b)]
 sortSnds = sortBy myComparator
   where 
-    myComparator (_,y) (_,b) 
-      | y > b = GT
-      | otherwise = LT
+    myComparator (_,y) (_,b) = compare y b
 
