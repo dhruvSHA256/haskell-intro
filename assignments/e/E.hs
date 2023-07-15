@@ -121,9 +121,9 @@ askInt prompt = do
 
 sumTwo :: IO ()
 sumTwo = do
-  x <- askInt "Please enter first numbe:"
-  y <- askInt "Please enter second numbe:"
-  putStrLn ("The sum of both number is " ++ show (x + y) ++ ".")
+  x <- askInt "Please enter first number:"
+  y <- askInt "Please enter second number:"
+  putStrLn ("The sum of both numbers is " ++ show (x + y) ++ ".")
 
 -- Task E-6.
 --
@@ -163,7 +163,7 @@ sumMany :: IO ()
 sumMany = do
   n <- askInt "How many numbers do you want to add?"
   y <- replicateM n (askInt "Enter next number:")
-  putStrLn ("The sum of all number is " ++ show (sum y) ++ ".")
+  putStrLn ("The sum of all numbers is " ++ show (sum y) ++ ".")
 
 -- Task E-8.
 --
