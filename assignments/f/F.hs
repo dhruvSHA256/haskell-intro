@@ -13,6 +13,7 @@ import Data.Char
 import qualified Data.Map.Strict as M
 import System.IO
 import Text.Read (readMaybe)
+import qualified Control.Arrow as M
 
 -- Task F-1.
 --
@@ -143,12 +144,14 @@ exampleLevel =
     , (goal,           Room "Goal"            (M.fromList [(S, treasureRoom)]))
     ]
 
+navigateAux :: Level -> RoomId -> Dir -> Maybe RoomId
+navigateAux level roomId' dir' = do
+  room <- M.lookup roomId' level
+  room' <- M.lookup dir' (roomExits room)
+  Just room'
 navigate :: Level -> RoomId -> [Dir] -> Maybe RoomId
 navigate _ roomId [] = Just roomId
-navigate level roomId (dir:dirs) = do
-  room <- M.lookup roomId level
-  room' <- M.lookup dir (roomExits room)
-  navigate level room' dirs
+navigate level roomId dirs = foldM (navigateAux level) roomId dirs
 
 -- Task F-4.
 --
@@ -242,9 +245,5 @@ evalExpr (Add x y) = do
   y' <- evalExpr y
   return (x' + y')
 evalExpr (Lit x) = return x
-evalExpr (Var x) = do
-  res <- get
-  case M.lookup x res of
-    Just y -> return y
-    Nothing -> return 0
+evalExpr (Var x) = M.findWithDefault 0 x <$> get
 
