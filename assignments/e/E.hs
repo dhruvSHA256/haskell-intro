@@ -57,7 +57,7 @@ unsafeReadInt = read
 -- 'readInt' by using it.
 
 readInt :: String -> Maybe Int
-readInt x = readMaybe x :: Maybe Int
+readInt x = readMaybe x
 
 -- Task E-3.
 --
@@ -93,8 +93,7 @@ askInt :: String -> IO Int
 askInt prompt = do
   putStrLn prompt
   x <- getLine
-  let y = (readMaybe x :: Maybe Int)
-  case y of
+  case readMaybe x of
     Just z -> return z
     Nothing -> askInt prompt
 
@@ -133,10 +132,12 @@ sumTwo = do
 
 replicateM :: Int -> IO a -> IO [a]
 replicateM 0 _ = return []
-replicateM n ioa = do
-  x <- ioa
-  rest <- replicateM (n-1) ioa
-  return (x : rest)
+replicateM n ioa
+  | n <= 0 = return []
+  | otherwise = do
+      x <- ioa
+      rest <- replicateM (n-1) ioa
+      return (x : rest)
 
 -- Task E-7.
 --
@@ -213,10 +214,8 @@ sumMany' = do
 compareFileSizes :: FilePath -> FilePath -> IO (Maybe Ordering)
 compareFileSizes fileA fileB = catchIOError (Just <$> compareFileSizesAux fileA fileB) (\_ -> return Nothing)
   where
-    compareFileSizesAux a b = do
-      sizeA <- getFileSize fileA
-      sizeB <- getFileSize fileB
-      return (compare sizeA sizeB)
+    compareFileSizesAux a b = compare <$> getFileSize fileA <*> getFileSize fileB
+
 
 -- Task E-10.
 --
@@ -225,7 +224,7 @@ compareFileSizes fileA fileB = catchIOError (Just <$> compareFileSizesAux fileA 
 --
 -- Use the function
 --
---   randomRIO :: Random a => (a, a) -> IO a
+--   randomRIO :: Random a > (a, a) -> IO a
 --
 -- from the module System.Random (which you will have to add to the
 -- import list).
@@ -336,20 +335,23 @@ data Card = Card CardNumber Suit
 allCards :: [Card]
 allCards = [Card cn s | cn <- [minBound ..], s <- [minBound ..]]
 
-extract :: Int -> [a] -> (a, [a])
-extract index list
-  | index < 0 || index >= length list = error "Invalid index"
+extract :: Int -> [a] -> Int -> (a, [a])
+extract index list len
+  | index < 0 || index >= len = error "Invalid index"
   | otherwise = (element, before ++ after)
     where
       (before, element : after) = splitAt index list
 
+shuffleAux :: [a] -> Int -> IO [a]
+shuffleAux list len = do
+  index <- randomRIO (0, len - 1)
+  let (element, remaining) = extract index list len
+  rest <- shuffleAux remaining len
+  return (element : rest)
+
 shuffle :: [a] -> IO [a]
 shuffle [] = return []
-shuffle list = do
-  index <- randomRIO (0, length list - 1)
-  let (element, remaining) = extract index list
-  rest <- shuffle remaining
-  return (element : rest)
+shuffle list = shuffleAux list (length list)
 
 -- deck :: [Card]
 -- deck = [Card n s | n <- [minBound .. ], s <- [minBound ..]]
