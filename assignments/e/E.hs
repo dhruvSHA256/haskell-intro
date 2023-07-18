@@ -343,14 +343,14 @@ extract index list len
       (before, element : after) = splitAt index list
 
 shuffleAux :: [a] -> Int -> IO [a]
+shuffleAux [] _ = return []
 shuffleAux list len = do
   index <- randomRIO (0, len - 1)
   let (element, remaining) = extract index list len
-  rest <- shuffleAux remaining len
+  rest <- shuffleAux remaining (len-1)
   return (element : rest)
 
 shuffle :: [a] -> IO [a]
-shuffle [] = return []
 shuffle list = shuffleAux list (length list)
 
 -- deck :: [Card]
