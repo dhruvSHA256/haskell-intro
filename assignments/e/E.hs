@@ -2,17 +2,19 @@
 -- E.hs
 --
 -- (c) 2017-2021 Andres Loeh, Well-Typed LLP
-
 {-# OPTIONS_GHC -Wall -Wno-unused-imports #-}
+{-# OPTIONS_GHC -Wno-unused-matches #-}
+
 module E where
 
-import Prelude hiding (readLn)
-import Control.Monad (liftM)
+import Control.Monad (liftM, foldM)
 import Data.Char
 import System.Directory
 import System.IO
 import System.IO.Error
 import System.Random
+import Text.Read (readMaybe)
+import Prelude hiding (readLn)
 
 -- Task E-1.
 --
@@ -35,6 +37,15 @@ import System.Random
 -- PLEASE DESCRIBE HERE
 -- what you've seen when trying successful and unsuccessful call.
 
+-- ghci> unsafeReadInt "1"
+-- 1
+-- ghci> unsafeReadInt "hello"
+
+-- *** Exception: Prelude.read: no parse
+
+-- when we check instances of Read String is not their, so compiler is unable to
+-- successfully convert the input
+
 unsafeReadInt :: String -> Int
 unsafeReadInt = read
 
@@ -46,7 +57,7 @@ unsafeReadInt = read
 -- 'readInt' by using it.
 
 readInt :: String -> Maybe Int
-readInt = error "TODO: implement readInt"
+readInt x = readMaybe x
 
 -- Task E-3.
 --
@@ -57,7 +68,7 @@ readInt = error "TODO: implement readInt"
 -- Hint: Use 'fmap'.
 
 readLnMaybe :: Read a => IO (Maybe a)
-readLnMaybe = error "TODO: implement readLnMaybe"
+readLnMaybe = fmap readMaybe getLine
 
 -- Task E-4.
 --
@@ -79,7 +90,12 @@ readLnMaybe = error "TODO: implement readLnMaybe"
 --   because the first two attempts are no numbers.
 
 askInt :: String -> IO Int
-askInt = error "TODO: implement askInt"
+askInt prompt = do
+  putStrLn prompt
+  x <- getLine
+  case readMaybe x of
+    Just z -> return z
+    Nothing -> askInt prompt
 
 -- Task E-5.
 --
@@ -103,7 +119,10 @@ askInt = error "TODO: implement askInt"
 -- remember that strings are lists of characters.
 
 sumTwo :: IO ()
-sumTwo = error "TODO: define sumTwo"
+sumTwo = do
+  x <- askInt "Please enter first number:"
+  y <- askInt "Please enter second number:"
+  putStrLn ("The sum of both numbers is " ++ show (x + y) ++ ".")
 
 -- Task E-6.
 --
@@ -112,7 +131,13 @@ sumTwo = error "TODO: define sumTwo"
 -- the results in a list of n elements.
 
 replicateM :: Int -> IO a -> IO [a]
-replicateM = error "TODO: define replicateM"
+replicateM 0 _ = return []
+replicateM n ioa
+  | n <= 0 = return []
+  | otherwise = do
+      x <- ioa
+      rest <- replicateM (n-1) ioa
+      return (x : rest)
 
 -- Task E-7.
 --
@@ -136,7 +161,10 @@ replicateM = error "TODO: define replicateM"
 -- Hint: Try to use suitable IO functions.
 
 sumMany :: IO ()
-sumMany = error "TODO: define sumMany"
+sumMany = do
+  n <- askInt "How many numbers do you want to add?"
+  y <- replicateM n (askInt "Enter next number:")
+  putStrLn ("The sum of all numbers is " ++ show (sum y) ++ ".")
 
 -- Task E-8.
 --
@@ -157,7 +185,19 @@ sumMany = error "TODO: define sumMany"
 -- you can still find higher-order functions that work?
 
 sumMany' :: IO ()
-sumMany' = error "TODO: define sumMany"
+-- sumMany' = do
+--   n <- askInt "How many numbers do you want to add?"
+--   summ <- foldr (func1 n) (return 0) [1..n]
+--   putStrLn ("The sum of all numbers is " ++ show summ ++ ".")
+--   where
+--     func1 n x acc = do
+--       a <- askInt ("Enter number " ++ show x ++ " of " ++ show n ++ ":")
+--       y <- acc
+--       return (a+y)
+sumMany' = do
+  n <- askInt "How many numbers do you want to add?"
+  nums <- mapM (\x -> askInt ("Enter number " ++ show x ++ " of " ++ show n++ ":")) [1..n]
+  putStrLn ("The sum of all numbers is " ++ show (sum nums) ++ ".")
 
 -- Task E-9.
 --
@@ -172,7 +212,10 @@ sumMany' = error "TODO: define sumMany"
 -- to get this behaviour implemented correctly.
 --
 compareFileSizes :: FilePath -> FilePath -> IO (Maybe Ordering)
-compareFileSizes = error "TODO: define compareFileSizes"
+compareFileSizes fileA fileB = catchIOError (Just <$> compareFileSizesAux fileA fileB) (\_ -> return Nothing)
+  where
+    compareFileSizesAux a b = compare <$> getFileSize fileA <*> getFileSize fileB
+
 
 -- Task E-10.
 --
@@ -181,7 +224,7 @@ compareFileSizes = error "TODO: define compareFileSizes"
 --
 -- Use the function
 --
---   randomRIO :: Random a => (a, a) -> IO a
+--   randomRIO :: Random a > (a, a) -> IO a
 --
 -- from the module System.Random (which you will have to add to the
 -- import list).
@@ -192,8 +235,11 @@ compareFileSizes = error "TODO: define compareFileSizes"
 --
 -- Note: you need to provide correct type signature yourself
 --
-roll :: a
-roll = error "TODO: define roll"
+roll :: IO (Int, Int)
+roll = do
+  result1 <- randomRIO (1, 6)
+  result2 <- randomRIO (1, 6)
+  return (result1, result2)
 
 -- Task E-11.
 --
@@ -212,20 +258,27 @@ roll = error "TODO: define roll"
 -- Define an evaluator 'dice' that uses a random number generator
 -- to produce a result.
 
-data Dice =
-    D Quantity Die
-  | Const Int
-  | Plus Dice Dice
-  deriving (Show, Eq)
+data Dice
+    = D Quantity Die
+    | Const Int
+    | Plus Dice Dice
+    deriving (Show, Eq)
 
-infix  7 `D`
+infix 7 `D`
 infixl 6 `Plus`
 
 type Quantity = Int
-type Die      = Int
+type Die = Int
 
 dice :: Dice -> IO Int
-dice = error "TODO: implement dice"
+dice (Const x) = return x
+dice (Plus a b) = do
+  x <- dice a
+  y <- dice b
+  return (x+y)
+dice (D n die) = do
+  vals <- replicateM n (randomRIO (1,die))
+  return (sum vals)
 
 -- Task E-12.
 --
@@ -238,7 +291,12 @@ dice = error "TODO: implement dice"
 --   diceRange (2 `D` 8 `Plus` Const 4) == (6, 20)
 
 diceRange :: Dice -> (Int, Int)
-diceRange = error "TODO: implement diceRange"
+diceRange (Const x) = (x, x)
+diceRange (D n die) = (n, n * die)
+diceRange (Plus a b) = (min1 + min2, max1 + max2)
+  where
+    (min1, max1) = diceRange a
+    (min2, max2) = diceRange b
 
 -- Task E-13.
 --
@@ -262,20 +320,40 @@ diceRange = error "TODO: implement diceRange"
 -- The following data types are just given for flavour:
 
 data Suit = Clubs | Spades | Hearts | Diamonds
-  deriving (Show, Eq, Bounded, Enum)
+    deriving (Show, Eq, Bounded, Enum)
 
 data CardNumber = A | C2 | C3 | C4 | C5 | C6 | C7 | C8 | C9 | C10 | J | Q | K
-  deriving (Show, Eq, Bounded, Enum)
+    deriving (Show, Eq, Bounded, Enum)
 
 data Card = Card CardNumber Suit
-  deriving (Show, Eq)
+    deriving (Show, Eq)
 
 -- This list comprehension syntax offered by Haskell is just syntactic
 -- sugar for applications of the functions 'map' and 'concat'. Do you
 -- understand what it does?
 
 allCards :: [Card]
-allCards = [ Card cn s | cn <- [minBound ..], s <- [minBound ..] ]
+allCards = [Card cn s | cn <- [minBound ..], s <- [minBound ..]]
+
+extract :: Int -> [a] -> Int -> (a, [a])
+extract index list len
+  | index < 0 || index >= len = error "Invalid index"
+  | otherwise = (element, before ++ after)
+    where
+      (before, element : after) = splitAt index list
+
+shuffleAux :: [a] -> Int -> IO [a]
+shuffleAux [] _ = return []
+shuffleAux list len = do
+  index <- randomRIO (0, len - 1)
+  let (element, remaining) = extract index list len
+  rest <- shuffleAux remaining (len-1)
+  return (element : rest)
 
 shuffle :: [a] -> IO [a]
-shuffle = error "TODO: define shuffle"
+shuffle list = shuffleAux list (length list)
+
+-- deck :: [Card]
+-- deck = [Card n s | n <- [minBound .. ], s <- [minBound ..]]
+-- shuffledDeck :: [Card]
+-- shuffledDeck = shuffle deck
