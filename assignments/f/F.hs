@@ -13,6 +13,7 @@ import Data.Char
 import qualified Data.Map.Strict as M
 import System.IO
 import Text.Read (readMaybe)
+import qualified Control.Arrow as M
 
 -- Task F-1.
 --
@@ -49,7 +50,7 @@ mkMonth i
   | otherwise         = Nothing
 
 validateMonths :: [Int] -> Maybe [Month]
-validateMonths = error "TODO: define validateMonths"
+validateMonths = mapM mkMonth
 
 -- Task F-2.
 --
@@ -82,7 +83,10 @@ validateMonths = error "TODO: define validateMonths"
 --
 
 foldM :: Monad m => (r -> a -> m r) -> r -> [a] -> m r
-foldM = error "TODO: define foldM"
+foldM _ acc [] = return acc
+foldM fn acc (x:xs) = do
+  acc' <- fn acc x
+  foldM fn acc' xs
 
 -- Task F-3.
 --
@@ -140,8 +144,14 @@ exampleLevel =
     , (goal,           Room "Goal"            (M.fromList [(S, treasureRoom)]))
     ]
 
+navigateAux :: Level -> RoomId -> Dir -> Maybe RoomId
+navigateAux level roomId' dir' = do
+  room <- M.lookup roomId' level
+  room' <- M.lookup dir' (roomExits room)
+  Just room'
 navigate :: Level -> RoomId -> [Dir] -> Maybe RoomId
-navigate = error "TODO: define navigate"
+navigate _ roomId [] = Just roomId
+navigate level roomId dirs = foldM (navigateAux level) roomId dirs
 
 -- Task F-4.
 --
@@ -166,8 +176,19 @@ parseDir = do
       parseDir
 
 play :: Level -> RoomId -> IO ()
-play =
-  error "TODO: define play"
+play level roomId = if roomId == pit
+  then
+    putStrLn "reached Pit, unable to proceed further"
+  else
+    do
+      dir <- parseDir
+      case navigate level roomId [dir] of
+        Nothing -> do
+          putStrLn "Cannot go to this direction, try again"
+          play level roomId
+        (Just nextRoom) -> do
+          putStrLn ("Arrived at room: " ++ show nextRoom)
+          play level nextRoom
 
 -- Task F-5.
 --
@@ -212,8 +233,17 @@ runProgram p =
   evalState (evalProgram p) M.empty
 
 evalProgram :: Program -> State Env Int
-evalProgram = error "TODO: define evalProgram"
+evalProgram (Return expr) = evalExpr expr
+evalProgram (Assign str expr prog) = do
+  res <- evalExpr expr
+  modify (M.insert str res)
+  evalProgram prog
 
 evalExpr :: Expr -> State Env Int
-evalExpr = error "TODO: define evalExpr"
+evalExpr (Add x y) = do
+  x' <- evalExpr x
+  y' <- evalExpr y
+  return (x' + y')
+evalExpr (Lit x) = return x
+evalExpr (Var x) = M.findWithDefault 0 x <$> get
 
